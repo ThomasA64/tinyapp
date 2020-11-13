@@ -33,7 +33,6 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  console.log(req); 
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
@@ -45,7 +44,8 @@ app.get("/urls/new", (req, res) => {
 // In our request object, we need req.params and req.body
 // this route is going to lead us to our short URL page, aka urls_show
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: req.params.longURL};
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
+  console.log(req.params)
   res.render("urls_show", templateVars);
 });
 
