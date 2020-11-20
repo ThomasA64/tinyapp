@@ -2,9 +2,9 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
-const cookieParser = require('cookie-parser')
+const cookieParser = require('cookie-parser');
 
-app.use(cookieParser())
+app.use(cookieParser());
 
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -51,19 +51,25 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies["username"]};
+
+  const templateVars = { urls: urlDatabase, user: users[req.cookies["user_id"]]};
+  console.log("user",templateVars.user);
+  console.log(users);
+  console.log(req.cookies)
+
   res.render("urls_index", templateVars);
-  // console.log(req.cookies("User_id"));
+  // console.log(req.cookies("user_id"));
 });
 
 app.get("/urls/new", (req, res) => {
+  const templateVars = {user: users[req.cookies["user_id"]]};
   res.render("urls_new");
 });
 
 // In our request object, we need req.params and req.body
 // this route is going to lead us to our short URL page, aka urls_show
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: users[req.cookies["user_id"]]};
   console.log(req.params)
   res.render("urls_show", templateVars);
 });
@@ -89,29 +95,56 @@ app.post("/urls/:shortURL/delete", (req,res) => {
 })
 
 app.get("/register", (req, res) => {
+  const templateVars = {user: users[req.cookies["user_id"]]};
   res.render("register")
 })
 
 app.post("/register", (req,res) => {
   console.log(req.body, "req");
   const newuserId = generateRandomString()
-  users[newuserId] = {id: newuserId, email: req.body.email, password: req.body.password};
-  console.log(users);
-  res.cookie("User_id", newuserId);
-  res.redirect("/urls")
+// 1. Extract the user info from the form.
+  const email = req.body.email
+  const password = req.body.password
+
+// Step 1.5: Check that the email doesn't already exist in the users database.  
+
+
+// 2. Create a new user object
+  const newUser = {
+    id: newuserId, 
+    email: email, 
+    password: password
+  }
+// 3. Add the new user object to the global users database 
+users[newuserId] = newUser;
+// 4. Set the user_id in the cookie
+res.cookie("user_id", newuserId)
+// 5. redirect to "/urls"
+res.redirect("/urls")
+
+
+
+
+  //const users = { 
+//   "userRandomID": {
+//     id: "userRandomID", 
+//     email: "user@example.com", 
+//     password: "purple-monkey-dinosaur"
+//   },
+//  "user2RandomID": {
+//     id: "user2RandomID", 
+//     email: "user2@example.com", 
+//     password: "dishwasher-funk"
+//   }
+// }
 })
 
 app.post("/login", (req, res) => {
-  res.cookie("username", req.body.username)
+  res.cookie("user_id", req.body.users)
   res.redirect("/urls")
-  // res.cookie("username", users["email", "password"])
-  // Get the form data from the request, email and password
-  // Authenticate the user
-  // If the user authenicates successfully, then we should send them a cookie, if not send them back an error.
-  // res.redirect("/urls")
 })
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("username")
+  res.clearCookie("user_id")
   res.redirect("/urls")
 })

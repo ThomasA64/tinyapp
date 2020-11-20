@@ -4,8 +4,8 @@
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
-    <% if (username) { %>
-      <h2>Logged in as:<%= username %>!</h2>
+    <% if (user) { %>
+      <h2>Logged in as:<%= user.email %>!</h2>
         <form action="/logout" method="POST" class="form">
       <input type="submit" value="logout">
       </form>
@@ -13,9 +13,9 @@
     <div>
       
       <form action="/login" method="POST" class="form">
-      <label for="name">username:</label>
+      <label for="name">user:</label>
       
-      <input type="text" id="name" name="username" required minlength="4" maxlength="8" size="10">
+      <input type="text" id="name" name="user" required minlength="4" maxlength="8" size="10">
       <input type="submit" value="Login">
       </form>
       
