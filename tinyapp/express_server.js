@@ -123,7 +123,10 @@ app.post("/register", (req,res) => {
   const password = req.body.password
 
 // Step 1.5: Check that the email doesn't already exist in the users database.  
-
+const emailCheck = findUserByEmail(email);
+if (emailCheck.email === email) {
+  return res.send('404 Email already taken')
+}
 
 // 2. Create a new user object
   const newUser = {
@@ -136,23 +139,9 @@ users[newuserId] = newUser;
 // 4. Set the user_id in the cookie
 res.cookie("user_id", newuserId)
 // 5. redirect to "/urls"
-res.redirect("/urls")
+console.log(newuserId);
+res.redirect("/urls");
 
-
-
-
-  //const users = { 
-//   "userRandomID": {
-//     id: "userRandomID", 
-//     email: "user@example.com", 
-//     password: "purple-monkey-dinosaur"
-//   },
-//  "user2RandomID": {
-//     id: "user2RandomID", 
-//     email: "user2@example.com", 
-//     password: "dishwasher-funk"
-//   }
-// }
 })
 
 app.get("/login", (req, res) => {
