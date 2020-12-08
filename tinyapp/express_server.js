@@ -34,6 +34,17 @@ const users = {
   }
 }
 
+const findUserByEmail = function(email) {
+  // 1st step: 
+  for (const userId in users) {
+   const user = users[userId];
+   if (user.email === email) {
+     return user
+   }
+  } 
+  return false
+}
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -94,6 +105,11 @@ app.post("/urls/:shortURL/delete", (req,res) => {
   res.redirect("/urls")
 })
 
+app.post("/urls/:shortURL", (req, res) => {
+  urlDatabase[req.params.shortURL] = req.body.longUrl
+  res.redirect("/urls/" + req.params.shortURL)
+})
+
 app.get("/register", (req, res) => {
   const templateVars = {user: users[req.cookies["user_id"]]};
   res.render("register")
@@ -139,9 +155,27 @@ res.redirect("/urls")
 // }
 })
 
+app.get("/login", (req, res) => {
+  res.render("login");
+})
+
 app.post("/login", (req, res) => {
-  res.cookie("user_id", req.body.users)
-  res.redirect("/urls")
+  
+// 1st step is get email and password from the form
+const email = req.body.email
+const password = req.body.password
+// 2nd step is retrieve the user from the database by email.
+const user = findUserByEmail(email);
+// 3rd step once we retreive the user we need to check if the password checks out. 
+if (user.password === password) {
+  res.cookie("user_id", user.id)
+  res.redirect("/urls");
+} else {
+  return res.send("Wrong credential")
+}
+// 4th step write to the cookie
+// 
+//   
 })
 
 app.post("/logout", (req, res) => {
