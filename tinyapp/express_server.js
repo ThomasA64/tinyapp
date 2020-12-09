@@ -125,8 +125,12 @@ app.post("/register", (req,res) => {
 // Step 1.5: Check that the email doesn't already exist in the users database.  
 const emailCheck = findUserByEmail(email);
 if (emailCheck.email === email) {
-  return res.send('404 Email already taken')
+  return res.status(400).send('Email already taken');
 }
+
+if (email === '' || password === '') {
+    return res.status(400).send('One or more fields are empty');
+} 
 
 // 2. Create a new user object
   const newUser = {
