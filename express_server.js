@@ -19,7 +19,17 @@ const generateRandomString = function () {
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
+  //* STEP 2 for Basic Permission Features: 
+//* Change urlDatabase object structure to: 
+//* "b2xVn2": {"longUrl: http://www.lighthouselabs.ca", userID: users[req.cookies["user_id"]]}
+//? Maybe it would be users[req.cookies["user_id"]]
+//* or users.id
 };
+
+// const urlDatabase = {
+//   "b2xVn2": {longUrl: "http://www.lighthouselabs.ca", userID: [req.cookies["user_id"]]},
+//   "9sm5xK": {longUrl: "http://www.google.com", userID: [req.cookies["user_id"]]}
+//   };
 
 const users = { 
   "userRandomID": {
@@ -33,6 +43,8 @@ const users = {
     password: "dishwasher-funk"
   }
 }
+
+
 
 const findUserByEmail = function(email) {
   // 1st step: 
@@ -63,7 +75,9 @@ app.get("/hello", (req, res) => {
 
 app.get("/urls", (req, res) => {
 
-  const templateVars = { urls: urlDatabase, user: users[req.cookies["user_id"]]};
+  const user = users[req.cookies["user_id"]]
+
+  const templateVars = { urls: urlDatabase, user};
   console.log("user",templateVars.user);
   console.log(users);
   console.log(req.cookies)
@@ -74,7 +88,16 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   const templateVars = {user: users[req.cookies["user_id"]]};
-  res.render("urls_new");
+  
+    //* STEP 1 for Basic Permission Features: 
+  if (users[req.cookies["user_id"]]) {
+    res.render("urls_new", templateVars);
+  } else {
+    res.redirect("/login")
+  }
+  //? Maybe the conditional for redirecting goes here after checking for user login
+  //* If it doesn't see the cookie, redirect to login page
+  //* if(req.cookies["user_id"]) -> render urls_new { else redirect to /login}
 });
 
 // In our request object, we need req.params and req.body
@@ -112,7 +135,7 @@ app.post("/urls/:shortURL", (req, res) => {
 
 app.get("/register", (req, res) => {
   const templateVars = {user: users[req.cookies["user_id"]]};
-  res.render("register")
+  res.render("register", templateVars)
 })
 
 app.post("/register", (req,res) => {
@@ -127,7 +150,6 @@ app.post("/register", (req,res) => {
 const user = findUserByEmail(email)
 if (user) {
   return res.status(400).send('User already exists')
-
 }
   
 if (email === '' || password === '') {
@@ -150,7 +172,8 @@ res.redirect("/urls")
 })
 
 app.get("/login", (req, res) => {
-  res.render("login");
+  const templateVars = {user: users[req.cookies["user_id"]]};
+  res.render("login", templateVars);
 })
 
 app.post("/login", (req, res) => {
@@ -176,3 +199,7 @@ app.post("/logout", (req, res) => {
   res.clearCookie("user_id")
   res.redirect("/urls")
 })
+
+
+// If someone is not logged when clicking on my urls/new/, redirect to the login page
+
