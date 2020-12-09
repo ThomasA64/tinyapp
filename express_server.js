@@ -124,10 +124,10 @@ app.post("/register", (req,res) => {
 
 // Step 1.5: Check that the email doesn't already exist in the users database.  
 
-const checkEmail = (email) => {
-  if (checkEmail.email === email) {
-    return res.status(400).send('Email already exists')
-  }
+const user = findUserByEmail(email)
+if (user) {
+  return res.status(400).send('User already exists')
+
 }
   
 if (email === '' || password === '') {
@@ -165,7 +165,7 @@ if (user.password === password) {
   res.cookie("user_id", user.id)
   res.redirect("/urls");
 } else {
-  return res.send("Wrong credential")
+  return res.send("Wrong email or password")
 }
 // 4th step write to the cookie
 // 

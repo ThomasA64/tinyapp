@@ -4,28 +4,34 @@
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
-    <% if (user) { %>
-      <h2>Logged in as:<%= user.email %>!</h2>
-        <form action="/logout" method="POST" class="form">
-      <input type="submit" value="logout">
-      </form>
-    <% } else { %> 
-    <div>
-      
-      <form action="/login" method="POST" class="form">
-      <label for="name">user:</label>
-      
-      <input type="text" id="name" name="user" required minlength="4" maxlength="8" size="10">
-      <input type="submit" value="Login">
-      </form>
-      
-    </div>
-    <% } %>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
+    <div>
+    <% if (user) { %>
+      <h4>Logged in as:<%= user.email %>!</h4>
+        <form action="/logout" method="POST" class="form">
+      <input type="submit" value="Logout">
+      </form>
+    <% } else { %> 
+    <div>
+      
+      <form action="/login" method="POST" class="form">
+      <!-- <label for="name">user:</label>       -->
+      <!-- <input type="text" id="name" name="user" required minlength="4" maxlength="8" size="10"> -->
+      </form>
+
+      <div>
+        <a class="loginRoute" href="/login">Login</a>
+        <a class="registerRoute" href="/register">Register</a>
+      </div>
+      
     </div>
+    <% } %>
+    </div>
+  </div>
+  </div>
   </nav>
 </header>
