@@ -27,7 +27,7 @@ const generateRandomString = function () {
 // };
 
 const urlDatabase = {
-  "b2xVn2": {longUrl: "http://www.lighthouselabs.ca", userID: "exampleUser1"},
+  "sgq3y6": {longUrl: "http://www.lighthouselabs.ca", userID: "exampleUser1"},
   "9sm5xK": {longUrl: "http://www.google.com", userID: "exampleUser2"}
   };
 
@@ -90,10 +90,14 @@ app.get("/urls", (req, res) => {
   // console.log("user",templateVars.user);
   // console.log(users);
   // console.log(req.cookies)
-  console.log('these are my urls', UrlofUser((user)))
+  console.log('these are my urls', UrlofUser((ID)))
   console.log('this is the database', urlDatabase)
   res.render("urls_index", templateVars);
   // console.log(req.cookies("user_id"));
+  const UsersUrls = UrlofUser(ID) 
+  const shortUrls = Object.keys(UsersUrls)
+  shortUrls.forEach(shortUrl => {
+    console.log(shortUrl)})
 });
 
 app.get("/urls/new", (req, res) => {
@@ -147,15 +151,46 @@ app.get("/u/:shortURL", (req, res) => {
 // } 
 
 app.post("/urls/:shortURL/delete", (req,res) => {
+  const UserID = req.cookies["user_id"]
+  const shortURLtoDelete = req.params.shortURL
+  const ShortDelete = urlDatabase[shortURLtoDelete]
   
-  delete urlDatabase[req.params.shortURL]
-  res.redirect("/urls")
+  if (ShortDelete && UserID === ShortDelete.userID) {
+    delete urlDatabase[shortURLtoDelete]
+    res.redirect("/urls")
+  } else {
+    res.status(400).send('<h1>You do not own this Url!</h1>')
+}
+  // const UsersUrls = UrlofUser(UserID) 
+  // const shortUrls = Object.keys(UsersUrls)
+  // shortUrls.forEach(shortUrl => {
+  //   if (shortUrl === shortURLtoDelete) {
+  
+  //   } else {
+  //     res.status(400).send('<h1>You do not own this Url!</h1>')
+  //     res.redirect("urls/")
+  //   }
+  // })
+  
+
 })
 
+//Edit Url Path: 
 app.post("/urls/:shortURL", (req, res) => {
-  urlDatabase[req.params.shortURL] = req.body.longUrl
-  res.redirect("/urls/" + req.params.shortURL)
+
+  const UserID = req.cookies["user_id"]
+  const shortURLtoDelete = req.params.shortURL
+  const ShortDelete = urlDatabase[shortURLtoDelete]
+  
+  if (ShortDelete && UserID === ShortDelete.userID) {
+    ShortDelete = req.body.longUrl
+    res.redirect("/urls/" + req.params.shortURL)
+  } else {
+    res.status(400).send('<h1>You do not own this Url!</h1>')
+}
+
 })
+
 
 app.get("/register", (req, res) => {
   const templateVars = {user: users[req.cookies["user_id"]]};
