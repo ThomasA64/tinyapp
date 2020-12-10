@@ -3,6 +3,8 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 
 app.use(cookieParser());
 
@@ -35,12 +37,12 @@ const users = {
   "userRandomID": {
     id: "userRandomID", 
     email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
+    password: bcrypt.hashSync("user1", saltRounds)
   },
  "user2RandomID": {
     id: "user2RandomID", 
     email: "user2@example.com", 
-    password: "dishwasher-funk"
+    password: bcrypt.hashSync("user2", saltRounds)
   }
 }
 
@@ -139,17 +141,6 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
-// const UrlofUser = function(ID) {
-//   const Obj = {}
-//   for (const shortURL in urlDatabase) {
-//     const shortURLObj = urlDatabase[shortURL]
-//     if (shortURLObj.userID === ID) {
-//       Obj[shortURL] = shortURLObj
-//     }
-//   } 
-//   return Obj
-// } 
-
 app.post("/urls/:shortURL/delete", (req,res) => {
   const UserID = req.cookies["user_id"]
   const shortURLtoDelete = req.params.shortURL
@@ -161,17 +152,6 @@ app.post("/urls/:shortURL/delete", (req,res) => {
   } else {
     res.status(400).send('<h1>You do not own this Url!</h1>')
 }
-  // const UsersUrls = UrlofUser(UserID) 
-  // const shortUrls = Object.keys(UsersUrls)
-  // shortUrls.forEach(shortUrl => {
-  //   if (shortUrl === shortURLtoDelete) {
-  
-  //   } else {
-  //     res.status(400).send('<h1>You do not own this Url!</h1>')
-  //     res.redirect("urls/")
-  //   }
-  // })
-  
 
 })
 
@@ -197,8 +177,10 @@ app.get("/register", (req, res) => {
   res.render("register", templateVars)
 })
 
+//* THIS STEP CREATES A NEW USER: 
+
 app.post("/register", (req,res) => {
-  // console.log(req.body, "req");
+
   const newuserId = generateRandomString()
 // 1. Extract the user info from the form.
   const email = req.body.email
@@ -219,7 +201,7 @@ if (email === '' || password === '') {
   const newUser = {
     id: newuserId, 
     email: email, 
-    password: password
+    password: bcrypt.hashSync(password, saltRounds)
   }
 // 3. Add the new user object to the global users database 
 users[newuserId] = newUser;
@@ -227,7 +209,7 @@ users[newuserId] = newUser;
 res.cookie("user_id", newuserId)
 // 5. redirect to "/urls"
 res.redirect("/urls")
-
+console.log(newUser)
 })
 
 app.get("/login", (req, res) => {
@@ -243,7 +225,7 @@ const password = req.body.password
 // 2nd step is retrieve the user from the database by email.
 const user = findUserByEmail(email);
 // 3rd step once we retreive the user we need to check if the password checks out. 
-if (user.password === password) {
+if (bcrypt.compareSync(password, user.password)) {
   res.cookie("user_id", user.id)
   res.redirect("/urls");
 } else {
