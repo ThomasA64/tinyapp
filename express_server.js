@@ -3,9 +3,10 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session')
-
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
+const {findUserByEmail} = require('./helpers.js')
+
 
 app.use(cookieSession({
   name: 'session',
@@ -28,8 +29,6 @@ const generateRandomString = function () {
 //   //* STEP 2 for Basic Permission Features: 
 // //* Change urlDatabase object structure to: 
 // //* "b2xVn2": {"longUrl: http://www.lighthouselabs.ca", userID: users[req.cookies["user_id"]]}
-// //? Maybe it would be users[req.cookies["user_id"]]
-// //* or users.id
 // };
 
 const urlDatabase = {
@@ -50,16 +49,17 @@ const users = {
   }
 }
 
-const findUserByEmail = function(email) {
-  // 1st step: 
-  for (const userId in users) {
-   const user = users[userId];
-   if (user.email === email) {
-     return user
-   }
-  } 
-  return false
-}
+// const findUserByEmail = function(email) {
+//   //* Refactor to take in users database
+//   // 1st step: 
+//   for (const userId in users) {
+//    const user = users[userId];
+//    if (user.email === email) {
+//      return user
+//    }
+//   } 
+//   return false
+// }
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -192,7 +192,7 @@ app.post("/register", (req,res) => {
 
 // Step 1.5: Check that the email doesn't already exist in the users database.  
 
-const user = findUserByEmail(email)
+const user = findUserByEmail(email, users)
 if (user) {
   return res.status(400).send('User already exists')
 }
@@ -229,7 +229,7 @@ app.post("/login", (req, res) => {
 const email = req.body.email
 const password = req.body.password
 // 2nd step is retrieve the user from the database by email.
-const user = findUserByEmail(email);
+const user = findUserByEmail(email, users);
 // 3rd step once we retreive the user we need to check if the password checks out. 
 if (bcrypt.compareSync(password, user.password)) {
   req.session["user_id"] = user.id
