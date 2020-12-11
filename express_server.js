@@ -23,14 +23,6 @@ const generateRandomString = function () {
   return randString;
 };
 
-// const OLDurlDatabase = {
-//   "b2xVn2": "http://www.lighthouselabs.ca",
-//   "9sm5xK": "http://www.google.com"
-//   //* STEP 2 for Basic Permission Features: 
-// //* Change urlDatabase object structure to: 
-// //* "b2xVn2": {"longUrl: http://www.lighthouselabs.ca", userID: users[req.cookies["user_id"]]}
-// };
-
 const urlDatabase = {
   "sgq3y6": {longUrl: "http://www.lighthouselabs.ca", userID: "exampleUser1"},
   "9sm5xK": {longUrl: "http://www.google.com", userID: "exampleUser2"}
@@ -49,22 +41,17 @@ const users = {
   }
 }
 
-// const findUserByEmail = function(email) {
-//   //* Refactor to take in users database
-//   // 1st step: 
-//   for (const userId in users) {
-//    const user = users[userId];
-//    if (user.email === email) {
-//      return user
-//    }
-//   } 
-//   return false
-// }
-
+// GET /: Redirects to urls if logged in, if not redirects to login page.
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  
+if (users[req.session["user_id"]]) {
+  res.redirect("/urls")
+} else {
+  res.redirect("/login")
+}
 });
 
+// Console notification that the port is listening.
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
@@ -88,61 +75,81 @@ const UrlofUser = function(ID) {
   return Obj
 } 
 
+// GET /urls -> The Main Page of the Site, rendering urls_index.js.
+// Displays the current logged-in User's IDs.
 app.get("/urls", (req, res) => {
 
   const ID = req.session["user_id"]
   const user = users[ID]
   const templateVars = { urls: UrlofUser(ID), user};
-  // console.log("user",templateVars.user);
-  // console.log(users);
-  // console.log(req.session)
+
   console.log('these are my urls', UrlofUser((ID)))
   console.log('this is the database', urlDatabase)
+
   res.render("urls_index", templateVars);
-  // console.log(req.session("user_id"));
+
   const UsersUrls = UrlofUser(ID) 
   const shortUrls = Object.keys(UsersUrls)
+  
   shortUrls.forEach(shortUrl => {
     console.log(shortUrl)})
 });
 
+// The Page to create new Urls. 
+// -> If the user is not logged in redirects to /login.
 app.get("/urls/new", (req, res) => {
+
   const templateVars = {user: users[req.session["user_id"]]};
   
-    //* STEP 1 for Basic Permission Features: 
   if (users[req.session["user_id"]]) {
     res.render("urls_new", templateVars);
   } else {
     res.redirect("/login")
   }
-  //? Maybe the conditional for redirecting goes here after checking for user login
-  //* If it doesn't see the cookie, redirect to login page
-  //* if(req.session["user_id"]) -> render urls_new { else redirect to /login}
 });
 
-// In our request object, we need req.params and req.body
-// this route is going to lead us to our short URL page, aka urls_show
+// Short Url page, aka urls_show.ejs
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longUrl, user: users[req.session["user_id"]]};
-  // console.log(req.params)
-  res.render("urls_show", templateVars);
+  const urlLookupResult = urlDatabase[req.params.shortURL];
+  const userID = req.session["user_id"];
+
+  if(!userID) {
+    return res.send("You must be logged in.");
+  }
+
+  if (!urlLookupResult) {
+    return res.send("No result found for this short url.");
+  }
+
+  if (urlLookupResult.userID === userID) {
+    const templateVars = { shortURL: req.params.shortURL, longURL: urlLookupResult.longUrl, user: users[req.session["user_id"]]};
+    res.render("urls_show", templateVars);
+  } else {
+    res.send("You do not have permission to view this page.")
+  }
 });
 
 app.post("/urls", (req, res) => {
-  // console.log(req.body);  // Log the POST request body to the console
-  // res.send("Ok");  
+
   const userID = req.session["user_id"]
   const randomString = generateRandomString()  
   urlDatabase[randomString] = {longUrl: req.body.longURL, userID} 
   console.log('this is my userID', userID);
   res.redirect('/urls')
-  // Respond with 'Ok' (we will replace this)
+
 });
 
+// 
 app.get("/u/:shortURL", (req, res) => {
   // console.log('url',urlDatabase);
-  const longURL = urlDatabase[req.params.shortURL].longUrl
-  res.redirect(longURL);
+  const urlLookupResult = urlDatabase[req.params.shortURL];
+
+  if (!urlLookupResult) {
+    return res.send("No result found for this short url.");
+  } else {
+    res.redirect(urlLookupResult.longUrl);
+  }
+
 });
 
 app.post("/urls/:shortURL/delete", (req,res) => {
@@ -164,7 +171,7 @@ app.post("/urls/:shortURL", (req, res) => {
 
   const UserID = req.session["user_id"]
   const shortURLtoDelete = req.params.shortURL
-  const ShortDelete = urlDatabase[shortURLtoDelete]
+  let ShortDelete = urlDatabase[shortURLtoDelete]
   
   if (ShortDelete && UserID === ShortDelete.userID) {
     ShortDelete = req.body.longUrl
