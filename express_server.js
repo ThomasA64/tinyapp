@@ -83,9 +83,6 @@ app.get("/urls", (req, res) => {
   const user = users[ID]
   const templateVars = { urls: UrlofUser(ID), user};
 
-  console.log('these are my urls', UrlofUser((ID)))
-  console.log('this is the database', urlDatabase)
-
   res.render("urls_index", templateVars);
 
   const UsersUrls = UrlofUser(ID) 
@@ -134,14 +131,12 @@ app.post("/urls", (req, res) => {
   const userID = req.session["user_id"]
   const randomString = generateRandomString()  
   urlDatabase[randomString] = {longUrl: req.body.longURL, userID} 
-  console.log('this is my userID', userID);
   res.redirect('/urls')
 
 });
 
 // 
 app.get("/u/:shortURL", (req, res) => {
-  // console.log('url',urlDatabase);
   const urlLookupResult = urlDatabase[req.params.shortURL];
 
   if (!urlLookupResult) {
@@ -166,21 +161,15 @@ app.post("/urls/:shortURL/delete", (req,res) => {
 
 })
 
-//Edit Url Path: 
 app.post("/urls/:shortURL", (req, res) => {
 
-  const UserID = req.session["user_id"]
-  const shortURLtoDelete = req.params.shortURL
-  let ShortDelete = urlDatabase[shortURLtoDelete]
-  
-  if (ShortDelete && UserID === ShortDelete.userID) {
-    ShortDelete = req.body.longUrl
-    res.redirect("/urls/" + req.params.shortURL)
+  if (users[req.session.user_id]) {
+    urlDatabase[req.params.shortURL].longUrl = req.body.longUrl;
+    res.redirect("/urls");
   } else {
-    res.status(400).send('<h1>You do not own this Url!</h1>')
-}
-
-})
+    res.status(405).send("Error: You don't have permission to do that!");
+  }
+});
 
 
 app.get("/register", (req, res) => {
@@ -216,15 +205,18 @@ if (email === '' || password === '') {
   }
 // 3. Add the new user object to the global users database 
 users[newuserId] = newUser;
+
 // 4. Set the user_id in the cookie
 
 req.session["user_id"] = newuserId
-// res.cookie("user_id", newuserId)
+
 // 5. redirect to "/urls"
 res.redirect("/urls")
-console.log(newUser)
+
+
 })
 
+// The Login Page
 app.get("/login", (req, res) => {
   const templateVars = {user: users[req.session["user_id"]]};
   res.render("login", templateVars);
@@ -238,21 +230,20 @@ const password = req.body.password
 // 2nd step is retrieve the user from the database by email.
 const user = findUserByEmail(email, users);
 // 3rd step once we retreive the user we need to check if the password checks out. 
-if (bcrypt.compareSync(password, user.password)) {
+
+if (!user) {
+  return res.send("Wrong email or password")
+} 
+if (!bcrypt.compareSync(password, user.password)) {
+  return res.send("Password or email don't match")
+} 
   req.session["user_id"] = user.id
   res.redirect("/urls");
-} else {
-  return res.send("Wrong email or password")
-}
-// 4th step write to the cookie
-// 
-//   
 })
 
 app.post("/logout", (req, res) => {
   
   req.session = null;  
-//res.clearCookie("user_id")
   res.redirect("/urls")
 })
 
