@@ -5,8 +5,8 @@ It uses Ejs for the Html integration and Bootstrap for the CSS.
 
 ## Final Product
 
-!["screenshot description"](#)
-!["screenshot description"](#)
+!["Screenshot of server page "](https://github.com/ThomasA64/tinyapp/blob/main/docs/TinyAppServer.png?raw=true)
+!["Screenshot of main urls page"](https://github.com/ThomasA64/tinyapp/blob/main/docs/TinyAppUrls.png?raw=true)
 
 ## Dependencies
 
