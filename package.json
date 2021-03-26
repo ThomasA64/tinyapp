@@ -1,7 +1,10 @@
 {
   "name": "tinyapp",
   "version": "1.0.0",
-  "description": "",
+  "engines": {
+    "node": "10.16.1"
+  },
+  "description": "An app designed to showcase Express.JS routing",
   "main": "express_server.js",
   "scripts": {
     "start": "./node_modules/.bin/nodemon -L express_server.js",
