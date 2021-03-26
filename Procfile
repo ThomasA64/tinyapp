@@ -1,1 +1,1 @@
-web: npm start
+web: node express_server.js
