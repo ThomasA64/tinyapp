@@ -1,8 +1,8 @@
 const http = require("http");
-const PORT = 8080;
+const PORT = process.env.PORT || 8080;
 
 // a function which handles requests and sends response
-const requestHandler = function(request, response) {
+const requestHandler = function (request, response) {
   if (request.url === "/") {
     response.end("Welcome!");
   } else if (request.url === "/urls") {
@@ -14,10 +14,10 @@ const requestHandler = function(request, response) {
 };
 
 const server = http.createServer(requestHandler);
-console.log('Server created');
+console.log("Server created");
 
 server.listen(PORT, () => {
   console.log(`Server listening on: http://localhost:${PORT}`);
 });
 
-console.log('Last line (after .listen call)');
+console.log("Last line (after .listen call)");
